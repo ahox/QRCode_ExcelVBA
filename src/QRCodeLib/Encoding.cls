@@ -21,7 +21,7 @@ Public Sub Init(ByVal charsetName As String)
     m_charset = charsetName
 
     Set m_sr = CreateObject("ADODB.Stream")
-    m_sr.Mode = adModeReadWrite
+    m_sr.mode = adModeReadWrite
     m_sr.Charset = charsetName
 End Sub
 

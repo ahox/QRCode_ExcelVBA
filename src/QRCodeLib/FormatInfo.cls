@@ -102,9 +102,9 @@ Private Function GetValue(ByVal ecLevel As ErrorCorrectionLevel, _
     Dim indicator As Long
 
     Select Case ecLevel
-        Case ErrorCorrectionLevel.L
+        Case ErrorCorrectionLevel.l
             indicator = 1
-        Case ErrorCorrectionLevel.M
+        Case ErrorCorrectionLevel.m
             indicator = 0
         Case ErrorCorrectionLevel.Q
             indicator = 3

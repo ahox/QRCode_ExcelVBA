@@ -26,8 +26,8 @@ Private Sub Class_Initialize()
 End Sub
 
 Public Sub Place(ByRef moduleMatrix() As Variant)
-    Dim offset As Long
-    offset = (UBound(moduleMatrix) + 1) - (UBound(m_values) + 1)
+    Dim Offset As Long
+    Offset = (UBound(moduleMatrix) + 1) - (UBound(m_values) + 1)
 
     Dim i As Long
     Dim j As Long
@@ -37,8 +37,8 @@ Public Sub Place(ByRef moduleMatrix() As Variant)
             v = m_values(i)(j)
 
             moduleMatrix(i)(j) = v
-            moduleMatrix(i)(j + offset) = v
-            moduleMatrix(i + offset)(j) = v
+            moduleMatrix(i)(j + Offset) = v
+            moduleMatrix(i + Offset)(j) = v
         Next
     Next
 End Sub

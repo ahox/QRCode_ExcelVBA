@@ -2,11 +2,11 @@ Attribute VB_Name = "QuietZone"
 Option Private Module
 Option Explicit
 
-Public Function Place(ByRef moduleMatrix() As Variant, Optional ByVal Width As Long = 4) As Variant()
-    If Width < 0 Then Call Err.Raise(5)
+Public Function Place(ByRef moduleMatrix() As Variant, Optional ByVal width As Long = 4) As Variant()
+    If width < 0 Then Call Err.Raise(5)
 
     Dim sz As Long
-    sz = UBound(moduleMatrix) + Width * 2
+    sz = UBound(moduleMatrix) + width * 2
 
     Dim ret() As Variant
     ReDim ret(sz)
@@ -23,7 +23,7 @@ Public Function Place(ByRef moduleMatrix() As Variant, Optional ByVal Width As L
     Dim c As Long
     For r = 0 To UBound(moduleMatrix)
         For c = 0 To UBound(moduleMatrix(r))
-            ret(r + Width)(c + Width) = moduleMatrix(r)(c)
+            ret(r + width)(c + width) = moduleMatrix(r)(c)
         Next
     Next
 

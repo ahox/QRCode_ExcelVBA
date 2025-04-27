@@ -10,30 +10,17 @@ Attribute VB_Exposed = True
 Option Explicit
 
 Public Enum ErrorCorrectionLevel
-    L
-    M
+    l
+    m
     Q
     H
 End Enum
 
-Public Enum ImageFormat
-    fmtBmp = &H10
-    fmtPng = &H20
-    fmtSvg = &H30
-    fmtEmf = &H40
-    fmtTiff = &H50
-    fmtGif = &H60
-    fmtMonochrome = 0
-    fmtTrueColor = 1
-    fmtBilevel = 2
+Public Enum EncodingMode
+    UNKNOWN
+    NUMERIC
+    ALPHA_NUMERIC
+    EIGHT_BIT_BYTE
+    KANJI
 End Enum
 
-Public Enum OlePicType
-    Bitmap = 1
-    EnhMetaFile = 4
-End Enum
-
-Public Enum BackStyle
-    bkTransparent = 0
-    bkOpaque = 1
-End Enum

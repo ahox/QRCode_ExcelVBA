@@ -2,171 +2,77 @@
 QRCodeLibVBAは、Excel VBAで書かれたQRコード生成ライブラリです。  
 JIS X 0510:2004に基づくモデル2コードシンボルを生成します。
 
+## オリジナルとの差異
+[オリジナル](https://github.com/yas78/QRCodeLibVBA)から画像ファイルやIPictureDispオブジェクトの作成機能を削除しています。
+その代わりとして文字列化されたQRコードを取得し，ワークシート関数と条件付き書式により画像として利用する方法を取っています。
+
 ## 特徴
 - 数字・英数字・8ビットバイト・漢字モードに対応しています
 - 分割QRコードを作成可能です
-- BMP、EMF、GIF、PNG、SVG、TIFFファイルに保存可能です
-- QRコードをIPictureDispオブジェクトとして取得可能です  
-- 配色を指定可能です
 - 文字セットを指定可能です
-- QRコードをクリップボードに保存可能です
+- ワークシート関数として利用可能です
 
+## 要件
+- 文字列を指定した文字コードのバイト列として取得するために `ADODB.Stream` を参照します。
 
 ## クイックスタート
-QRCodeLib.xlamを参照設定してください。  
-
+- `bin/Release.xlsm` をダウンロードして開いてください。
+- `使用例` シートの `B1` セルへQRコード化したい文字列を入力してください。
+- `D5` セル以降の範囲がQRコードとなるので範囲を選択してコピーし，使用箇所にて「リンクされた図」として貼りつけを行います。
 
 ## 使用方法
-### 例１．最小限のコードを示します
+- ワークシート関数 `QR` を使用し，指定した条件（エラー訂正レベル、QRコードの最大バージョン、構造化付加モード、文字セット、固定サイズ設定）に基づくQRコードを文字列形式で取得します。（使用例シートのB2セル）
+    - `Data` : QRコードの内容
+    - `EcLevel` : エラー訂正レベル（ `"L", "M", "Q", "H"`のいずれか。指定しない場合は`"M"`）
+    - `MaxVer` : 最大バージョン（`1`から`40`の整数。指定しない場合は`40`）
+    - `AllowStructuredAppend` : 最大バージョンを超えるデータ容量の場合に連結QRコードの生成を許可するか（`TRUE`で許可。指定しない場合は`FALSE`）
+    - `CharsetName` : 文字コード名（`"UTF-8", "Unicode", "iso-2022-jp", "EUC-JP"`等を指定する。指定しない場合は`"Shift_JIS"`となり，日本語の場合 `Kanji`モードを用いて符号化する。
+    - `FixedSize` : 固定サイズにするか（`TRUE`で固定サイズにする。指定しない場合は`FALSE`）
 
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols()
-sbls.AppendText "012345abcdefg"
-
-Dim pict As stdole.IPictureDisp
-Set pict = sbls(0).GetPicture()
+```
+[QR-String]
+=QR([Data],[EcLevel],[MaxVer],[AllowStructuredAppend],[CharsetName],[FixedSize])
 ```
 
-### 例２．誤り訂正レベルを指定する
-CreateSymbols関数の引数に、ErrorCorrectionLevel列挙型の値を設定してSymbolsオブジェクトを生成します。
+- 文字列形式のQRコードのデータは，明モジュールは0，暗モジュールは1，行区切りは半角空白なので，まずはこれを行ごとのデータに分割するため，以下の数式を用いて１行あたりのモジュール数を得ます。（使用例シートのB3セル）
 
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols(ErrorCorrectionLevel.L) ' 7%
-Set sbls = CreateSymbols(ErrorCorrectionLevel.M) ' 15%(default)
-Set sbls = CreateSymbols(ErrorCorrectionLevel.Q) ' 25%
-Set sbls = CreateSymbols(ErrorCorrectionLevel.H) ' 30%
+```
+[ModSizePerRow]
+=FIND(" ",[QR-String])
 ```
 
-### 例３．型番の上限を指定する
-CreateSymbols関数のmaxVer引数を設定してSymbolsオブジェクトを生成します。
+- 以下の数式を用いて行ごとのデータに分割します。（使用例シートのB5～B146セル）
+    - `RowIndex` : 1から始まる行番号
 
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols(maxVer:=10)
+```
+[QR-String-Row]
+=MID([QR-String], ([RowIndex]-1)*[ModSizePerRow]+1, [ModSizePerRow])
 ```
 
-### 例４．文字セットを指定する
-CreateSymbols関数のcharsetName引数を設定してSymbolsオブジェクトを生成します。
-（ADODB.Stream に依存しています。使用可能な文字セットはレジストリ[HKEY_CLASSES_ROOT\MIME\Database\Charset]を確認してください。）
+- 以下の数式を用いて各セルに対応する単一モジュールの明暗データを得ます。（使用例シートのD5～EW146セル）
+    - `ColumnIndex` : 1から始まる列番号
 
-既定値はShift_JISです。UTF-8の設定例を以下に示します。
-
-
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols(charsetName:="UTF-8")
+```
+=MID([QR-String-Row],[ColumnIndex],1)
 ```
 
-### 例５．分割QRコードを作成する
-CreateSymbols関数の引数を設定してSymbolsオブジェクトを生成します。型番の上限を指定しない場合は、型番40を上限に分割されます。  
+- 条件付き書式（特定の文字列’1’を含む場合に黒色塗りつぶし）を設定し，QRコード画像を得ます。注意点として，MID関数で文字列として1を取り出しているので，数値としての1ではなく文字列の1を指定します。（使用例シートのD5～EW146セル）
 
-型番1を上限に分割し、各QRコードのIPictureDispオブジェクトを取得する例を示します。
 
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols(maxVer:=1, allowStructuredAppend:=True)
-sbls.AppendText "abcdefghijklmnopqrstuvwxyz"
-    
-Dim pict As stdole.IPictureDisp
-Dim sbl As Symbol
-    
-For Each sbl In sbls
-    Set pict = sbl.GetPicture()
-Next
-```
+- QRコードのセル範囲を選択し，コピーし，任意の場所で「リンクされた図」として貼りつけを行います。
 
-### 例６．画像形式を指定してIPictureDispオブジェクトを取得する
-GetPictureメソッドのpicType引数を設定します。
+## 詳細
 
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols()
-sbls.AppendText "012345abcdefg"
+コードの詳細は `bin/Debug.xlsm` を確認してください。
 
-Dim pict As stdole.IPictureDisp
+以下の内容が記録されています。
 
-' Bitmap
-Set pict = sbls(0).GetPicture(picType:=Bitmap)
+- 各クラス，各プロシージャの説明ドキュメント
 
-' Metafile
-Set pict = sbls(0).GetPicture(picType:=EnhMetaFile)
-```
+- 処理のフローチャート
 
-### 例７．ファイルへ保存する
-SymbolクラスのSaveAsメソッドを使用します。
+- 実行時のプロシージャの呼出履歴の例
 
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols()
-sbls.AppendText "012345abcdefg"
-    
-' monochrome BMP
-sbls(0).SaveAs "filename"
+なお，実行時のプロシージャの呼出履歴の作成には[StackTraceLib_VBA](https://github.com/ahox/StackTraceLib_VBA)を使用しています。
 
-' true color BMP
-sbls(0).SaveAs "filename", fmt:=fmtTrueColor
 
-' EMF
-sbls(0).SaveAs "filename", fmt:=fmtEMF
-
-' GIF
-sbls(0).SaveAs "filename", fmt:=fmtGIF
-
-' transparent GIF
-sbls(0).SaveAs "filename", fmt:=fmtGIF, bkStyle:=bkTransparent
-
-' monochrome PNG
-sbls(0).SaveAs "filename", fmt:=fmtPNG
-
-' true color PNG 
-sbls(0).SaveAs "filename", fmt:=fmtPNG + fmtTrueColor
-
-' transparent PNG 
-sbls(0).SaveAs "filename", fmt:=fmtPNG + fmtTrueColor, bkStyle:=bkTransparent
-
-' SVG
-sbls(0).SaveAs "filename", fmt:=fmtSVG
-
-' monochrome TIFF
-sbls(0).SaveAs "filename", fmt:=fmtTIFF
-
-' true color TIFF
-sbls(0).SaveAs "filename", fmt:=fmtTIFF + fmtTrueColor
-
-' bilevel TIFF
-sbls(0).SaveAs "filename", fmt:=fmtTIFF + fmtBilevel
-
-' 10 pixels per module
-sbls(0).SaveAs "filename", moduleSize:=10
-    
-' specify foreground and background colors
-sbls(0).SaveAs "filename", foreRgb:="#0000FF", backRgb:="#FFFF00"
-```
-
-### 例８．クリップボードへ保存する
-SymbolクラスのSetToClipBoardメソッドを使用します。
-
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols()
-sbls.AppendText "012345abcdefg"
-
-' Bitmap 
-sbls(0).SetToClipBoard
-
-' Metafile
-sbls(0).SetToClipboard fmt:=fmtEMF
-```
-
-### 例９．型番を固定して画像サイズを一定にする
-CreateSymbols関数のmaxVer引数とfixedSize引数を設定してSymbolsオブジェクトを生成します。  
-常にmaxVer引数で指定された型番で生成されます。  
-型番10に固定する例を以下に示します。
-
-```VBA
-Dim sbls As Symbols
-Set sbls = CreateSymbols(maxVer:=10, fixedSize:=True)
-sbls.AppendText "Hello World"
-```
