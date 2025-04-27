@@ -16,11 +16,13 @@ JIS X 0510:2004に基づくモデル2コードシンボルを生成します。
 - 文字列を指定した文字コードのバイト列として取得するために `ADODB.Stream` を参照します。
 
 ## クイックスタート
+![quickstart.png](doc/quickstart.png)
 - `bin/Release.xlsm` をダウンロードして開いてください。
 - `使用例` シートの `B1` セルへQRコード化したい文字列を入力してください。
 - `D5` セル以降の範囲がQRコードとなるので範囲を選択してコピーし，使用箇所にて「リンクされた図」として貼りつけを行います。
 
 ## 使用方法
+![wsfuncparam.png](doc/wsfuncparam.png)
 - ワークシート関数 `QR` を使用し，指定した条件（エラー訂正レベル、QRコードの最大バージョン、構造化付加モード、文字セット、固定サイズ設定）に基づくQRコードを文字列形式で取得します。（使用例シートのB2セル）
     - `Data` : QRコードの内容
     - `EcLevel` : エラー訂正レベル（ `"L", "M", "Q", "H"`のいずれか。指定しない場合は`"M"`）
@@ -58,8 +60,11 @@ JIS X 0510:2004に基づくモデル2コードシンボルを生成します。
 
 - 条件付き書式（特定の文字列’1’を含む場合に黒色塗りつぶし）を設定し，QRコード画像を得ます。注意点として，MID関数で文字列として1を取り出しているので，数値としての1ではなく文字列の1を指定します。（使用例シートのD5～EW146セル）
 
+![formatrule.png](doc/formatrule.png)
 
 - QRコードのセル範囲を選択し，コピーし，任意の場所で「リンクされた図」として貼りつけを行います。
+
+![linkedimage.png](doc/linkedimage.png)
 
 ## 詳細
 
@@ -69,9 +74,15 @@ JIS X 0510:2004に基づくモデル2コードシンボルを生成します。
 
 - 各クラス，各プロシージャの説明ドキュメント
 
+![document-sample.png](doc/document-sample.png)
+
 - 処理のフローチャート
 
+![flowchat-sample.png](doc/flowchat-sample.png)
+
 - 実行時のプロシージャの呼出履歴の例
+
+![trace-sample.png](doc/trace-sample.png)
 
 なお，実行時のプロシージャの呼出履歴の作成には[StackTraceLib_VBA](https://github.com/ahox/StackTraceLib_VBA)を使用しています。
 
